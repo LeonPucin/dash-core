@@ -1,0 +1,19 @@
+node_modules
+data
+dist
+.env
+
+# Integration with IDE/editors (VSCode/JetBrains)
+.vscode/
+.idea/
+
+# System files (Mac, Windows, IDE)
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Config
+config.json
