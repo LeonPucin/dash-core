@@ -36,7 +36,7 @@ export class TimeSpan {
     /**
      * Creates a TimeSpan for the specified number of days.
      * @param days Number of days.
-     * @returns A TimeSpan equal to `days` \u00D7 24 hours.
+     * @returns A TimeSpan equal to `days` 24 hours.
      */
     static fromDays(days: number): TimeSpan {
         return new TimeSpan(days * 24 * 60 * 60 * 1000);
@@ -45,7 +45,7 @@ export class TimeSpan {
     /**
      * Creates a TimeSpan for the specified number of hours.
      * @param hours Number of hours.
-     * @returns A TimeSpan equal to `hours` \u00D7 60 minutes.
+     * @returns A TimeSpan equal to `hours` 60 minutes.
      */
     static fromHours(hours: number): TimeSpan {
         return new TimeSpan(hours * 60 * 60 * 1000);
@@ -54,7 +54,7 @@ export class TimeSpan {
     /**
      * Creates a TimeSpan for the specified number of minutes.
      * @param minutes Number of minutes.
-     * @returns A TimeSpan equal to `minutes` \u00D7 60 seconds.
+     * @returns A TimeSpan equal to `minutes` 60 seconds.
      */
     static fromMinutes(minutes: number): TimeSpan {
         return new TimeSpan(minutes * 60 * 1000);
@@ -63,7 +63,7 @@ export class TimeSpan {
     /**
      * Creates a TimeSpan for the specified number of seconds.
      * @param seconds Number of seconds.
-     * @returns A TimeSpan equal to `seconds` \u00D7 1000 milliseconds.
+     * @returns A TimeSpan equal to `seconds` 1000 milliseconds.
      */
     static fromSeconds(seconds: number): TimeSpan {
         return new TimeSpan(seconds * 1000);
