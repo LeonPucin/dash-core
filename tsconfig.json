@@ -9,6 +9,7 @@
     "noImplicitOverride": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "baseUrl": "./src",
     "paths": {
       "dash-kit": [
