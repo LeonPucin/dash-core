@@ -1,6 +1,6 @@
 {
   "name": "dash-core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A foundational toolkit of types, collections, services, and architectural patterns designed to accelerate application development.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,7 +15,19 @@
     "test": "jest",
     "prepare": "npm run build"
   },
-  "keywords": [],
+  "keywords": [
+    "typescript",
+    "toolkit",
+    "utilities",
+    "core",
+    "architecture",
+    "services",
+    "abstractions",
+    "collections",
+    "tasks",
+    "async",
+    "modular"
+  ],
   "author": "Leonid Medvedev",
   "license": "MIT",
   "type": "commonjs",
