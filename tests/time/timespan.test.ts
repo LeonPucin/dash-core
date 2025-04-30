@@ -1,4 +1,4 @@
-﻿import { TimeSpan } from "../../src";
+﻿import { TimeSpan } from '../../src';
 
 describe('TimeSpan', () => {
     test('constructor defaults to zero', () => {

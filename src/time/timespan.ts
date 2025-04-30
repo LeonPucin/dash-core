@@ -11,7 +11,7 @@ export class TimeSpan {
      */
     constructor(milliseconds: number = 0) {
         if (milliseconds < 0) {
-            throw new Error("Milliseconds cannot be negative");
+            throw new Error('Milliseconds cannot be negative');
         }
         this.ms = milliseconds;
     }

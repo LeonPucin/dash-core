@@ -1,1 +1,1 @@
-﻿export { TimeSpan } from "./timespan";
+﻿export * from './timespan';
