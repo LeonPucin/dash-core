@@ -127,6 +127,7 @@ function createWinstonLogger(options: ServiceInfo): Logger {
     return result;
 }
 
+/** Encapsulates service logging with configurable options. */
 export class ServiceLogger {
     private readonly logger: Logger;
 
@@ -141,6 +142,17 @@ export class ServiceLogger {
         return item;
     }
 
+    /**
+     * Creates a new instance of the ServiceLogger class with specified options.
+     * If no options are provided, defaults are used.
+     * @param {ServiceOptions} [options={}] - Configuration options for the logger.
+     * @param {string}  options.serviceName - The name of the service (default is "nameless-service").
+     * @param {LogLevel} options.logLevel - The default log level (default is LogLevel.DEBUG).
+     * @param {boolean} options.verbose - Indicates whether verbose logging is enabled (default is true).
+     * @param {string} options.logPath - The directory where logs will be stored (default is the current working directory).
+     * @param {LogLevel} options.globalLogLevel - The global log level for the service (default is LogLevel.DEBUG).
+     * @param {string} options.globalFilter - A filter string for global logging configuration.
+     */
     constructor(options: ServiceOptions = {}) {
         this.options = {
             serviceName: options.serviceName || "nameless-service",
@@ -155,30 +167,56 @@ export class ServiceLogger {
         this.logger.defaultMeta = { service: this.options.serviceName };
     }
 
-    info(message: string, ...meta: unknown[]): void {
+    /**
+     * Logs an informational message if the service is observable.
+     * @param {string} message - The message to log.
+     * @param {...unknown[]} meta - Additional metadata to log alongside the message.
+     */
+    public info(message: string, ...meta: unknown[]): void {
         if (!this.isObservable)
             return;
 
         this.logger.info(message, ...meta);
     };
 
-    warning(message: string, ...meta: unknown[]): void {
+    /**
+     * Logs a warning message.
+     * @param {string} message - The message to log.
+     * @param {...unknown[]} meta - Additional metadata to log alongside the message.
+     */
+    public warning(message: string, ...meta: unknown[]): void {
         this.logger.warn(message, ...meta);
     }
 
-    debug(message: string, ...meta: unknown[]): void {
+    /**
+     * Logs a debug message if the service is observable.
+     * @param {string} message - The message to log.
+     * @param {...unknown[]} meta - Additional metadata to log alongside the message.
+     */
+    public debug(message: string, ...meta: unknown[]): void {
         if (!this.isObservable)
             return;
 
         this.logger.debug(message, ...meta);
     }
 
-    error(message: string, ...meta: unknown[]): Error {
+    /**
+     * Logs an error message and returns an Error object.
+     * @param {string} message - The error message.
+     * @param {...unknown[]} meta - Additional metadata to log alongside the message.
+     * @returns {Error} The created error.
+     */
+    public error(message: string, ...meta: unknown[]): Error {
         this.logger.error(message, ...meta);
         return new Error(message);
     }
 
-    addTransport(relativePath: string, logLevel?: LogLevel): void {
+    /**
+     * Adds transport to the logger to write logs to a specified file.
+     * @param {string} relativePath - The relative path where the log file will be stored.
+     * @param {LogLevel} [logLevel] - The log level for this transport. If not provided, all logs will be written.
+     */
+    public addTransport(relativePath: string, logLevel?: LogLevel): void {
         if (!this.options.verbose)
             return;
 
