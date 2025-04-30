@@ -1,5 +1,5 @@
 ﻿import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { ExponentialBackoff, ExponentialBackoffOptions, TimeSpan } from 'dash-kit';
+import { ExponentialBackoff, ExponentialBackoffOptions, TimeSpan } from 'dash-core';
 
 /**
  * Provides HTTP GET and POST requests with retries using exponential backoff.

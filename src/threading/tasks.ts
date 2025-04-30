@@ -1,4 +1,4 @@
-﻿import { TimeSpan } from 'dash-kit';
+﻿import { TimeSpan } from 'dash-core';
 
 class Tasks {
     /** Waits for the given `TimeSpan` before resolving. */

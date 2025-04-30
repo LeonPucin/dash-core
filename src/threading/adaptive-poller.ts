@@ -1,4 +1,4 @@
-import { TimeSpan, ServiceLogger } from 'dash-kit';
+import { TimeSpan, ServiceLogger } from 'dash-core';
 
 /**
  * Handles polling with adaptive intervals, adjusting delays based on success or failure.

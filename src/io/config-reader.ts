@@ -1,5 +1,5 @@
 ﻿import { IOFile } from './file';
-import { ServiceLogger } from 'dash-kit';
+import { ServiceLogger } from 'dash-core';
 import path from 'path';
 
 /** Reads config files and merges with defaults.*/
