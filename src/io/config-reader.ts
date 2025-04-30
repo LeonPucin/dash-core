@@ -12,7 +12,6 @@ export class ConfigReader {
 
     /**
      * Reads the configuration from the specified file and populates the given object with values from the file.
-     *
      * @param {string} configPath - The path to the configuration file (e.g., './config.json').
      * @param {TConfig} defaultConfig - The object that contains the default configuration values.
      * @returns {Promise<TConfig>} A promise that resolves to the merged configuration object.

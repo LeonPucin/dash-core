@@ -5,3 +5,4 @@ export * from './io';
 export * from './threading';
 export * from './time';
 export * from './web';
+export { Mathf } from './mathf'
