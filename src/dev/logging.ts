@@ -159,7 +159,7 @@ export class ServiceLogger {
             logLevel: options.logLevel || LogLevel.DEBUG,
             verbose: options.verbose || true,
             logPath: options.logPath || process.cwd(),
-            globalLogLevel: options.globalLogLevel || LogLevel.DEBUG,
+            globalLogLevel: typeof options.globalLogLevel === 'string' ? options.globalLogLevel as LogLevel : options.globalLogLevel || LogLevel.DEBUG,
             globalFilter: parseFilter(options.globalFilter)
         }
 
@@ -243,11 +243,11 @@ type ServiceInfo = {
     globalFilter: Map<string, boolean>;
 }
 
-type ServiceOptions = {
+export type ServiceOptions = {
     serviceName?: string;
     logLevel?: LogLevel;
     verbose?: boolean;
     logPath?: string;
-    globalLogLevel?: LogLevel;
+    globalLogLevel?: LogLevel | string;
     globalFilter?: string
 }
