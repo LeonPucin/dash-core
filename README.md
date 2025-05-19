@@ -21,6 +21,6 @@ A foundational toolkit of types, collections, services, and architectural patter
 ## Installation
 
 ```bash
-yarn add dash-kit
+yarn add dash-core
 # or
-npm install dash-kit
+npm install dash-core
