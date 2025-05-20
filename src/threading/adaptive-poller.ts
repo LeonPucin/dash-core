@@ -1,19 +1,39 @@
 import { TimeSpan, ServiceLogger } from 'dash-core';
 
 
+type pollerOptions = {
+    initialDelay: TimeSpan,
+    maxDelay: TimeSpan,
+    factor: number,
+    resetPeriod: TimeSpan,
+    linearStep: TimeSpan
+    logger?: ServiceLogger,
+}
+
+const defaultOptions: pollerOptions = {
+    initialDelay: TimeSpan.fromSeconds(1),
+    maxDelay: TimeSpan.fromMinutes(1),
+    factor: 1.5,
+    resetPeriod: TimeSpan.fromMinutes(5),
+    linearStep: TimeSpan.fromSeconds(1)
+}
+
 /**
  * Handles polling with adaptive intervals, adjusting delays based on success or failure.
  */
 export class AdaptivePoller {
-    private currentTimeout: NodeJS.Timeout | undefined = undefined;
+    private currentTimeout?: NodeJS.Timeout;
 
     private currentDelay: number;
-    private lastErrorTime: number | null = null;
+
+    private lastErrorTime?: number;
 
     private polling: boolean = false;
-    private operation: (() => Promise<void>) | null = null;
-    private onError: ((error: Error) => void) | null = null;
-    private onFail: ((error: Error) => void) | null = null;
+    private operation?: (() => Promise<void>);
+    private onError?: ((error: Error) => void);
+    private onFail?: ((error: Error) => void);
+
+    private readonly options: pollerOptions;
 
     /**
      * Returns whether the polling operation is currently active.
@@ -23,24 +43,10 @@ export class AdaptivePoller {
         return this.polling;
     }
 
-    /**
-     * Creates an instance of the AdaptivePoller class with the specified configuration.
-     * @param {TimeSpan} [initialDelay=TimeSpan.fromSeconds(1)] - The initial delay before the first operation.
-     * @param {ServiceLogger} [logger] - A logger to log messages (optional).
-     * @param {TimeSpan} [maxDelay=TimeSpan.fromMinutes(1)] - The maximum delay between operations on errors.
-     * @param {number} [factor=1.5] - The multiplier for exponential interval increase on errors.
-     * @param {TimeSpan} [resetPeriod=TimeSpan.fromMinutes(5)] - The period after which the interval starts to decrease linearly if no errors occur.
-     * @param {TimeSpan} [linearStep=TimeSpan.fromSeconds(1)] - The step by which the interval decreases linearly on success.
-     */
-    constructor(
-        private readonly initialDelay: TimeSpan = TimeSpan.fromSeconds(1),
-        private readonly logger?: ServiceLogger,
-        private readonly maxDelay: TimeSpan = TimeSpan.fromMinutes(1),
-        private readonly factor: number = 1.5,
-        private readonly resetPeriod: TimeSpan = TimeSpan.fromMinutes(5),
-        private readonly linearStep: TimeSpan = TimeSpan.fromSeconds(1)
-    ) {
-        this.currentDelay = this.initialDelay.totalMilliseconds;
+    constructor(options: pollerOptions = defaultOptions) {
+        this.options = options;
+
+        this.currentDelay = this.options.initialDelay.totalMilliseconds;
     }
 
     /**
@@ -50,23 +56,20 @@ export class AdaptivePoller {
      * @param {((error: Error) => void) | null} [onError=null] - A callback to handle errors during polling.
      * @param {((error: Error) => void) | null} [onFail=null] - A callback to handle failure events (when the interval exceeds maxDelay).
      */
-    public start(
-        operation: () => Promise<void>,
-        onError: ((error: Error) => void) | null = null,
-        onFail: ((error: Error) => void) | null = null
-    ): void {
+    public start(operation: () => Promise<void>, onError?: ((error: Error) => void), onFail?: ((error: Error) => void)) {
         if (this.polling) return;
 
         this.polling = true;
+
         this.operation = operation;
         this.onError = onError;
         this.onFail = onFail;
 
-        this.currentDelay = this.initialDelay.totalMilliseconds;
+        this.currentDelay = this.options.initialDelay.totalMilliseconds;
 
         this.runPoll();
 
-        this.logger?.info('AdaptivePolling started');
+        this.options.logger?.info('AdaptivePolling started');
     }
 
     /**
@@ -76,7 +79,7 @@ export class AdaptivePoller {
         this.polling = false;
         clearTimeout(this.currentTimeout);
 
-        this.logger?.info('AdaptivePolling stopped');
+        this.options.logger?.info('AdaptivePolling stopped');
     }
 
     private async runPoll(): Promise<void> {
@@ -85,26 +88,28 @@ export class AdaptivePoller {
 
         try {
             await this.operation();
+
             const now = Date.now();
 
-            if (this.lastErrorTime === null || (now - this.lastErrorTime) >= this.resetPeriod.totalMilliseconds) {
-                this.currentDelay = Math.max(this.initialDelay.totalMilliseconds, this.currentDelay - this.linearStep.totalMilliseconds);
-            }
+            if (!this.lastErrorTime || (now - this.lastErrorTime) >= this.options.resetPeriod.totalMilliseconds) {
+                const initialDelay = this.options.initialDelay.totalMilliseconds;
+                const linearDifference = this.currentDelay - this.options.linearStep.totalMilliseconds
 
-            this.scheduleNextPoll();
+                this.currentDelay = Math.max(initialDelay, linearDifference);
+            }
         } catch (error) {
             this.lastErrorTime = Date.now();
-            this.currentDelay = this.currentDelay * this.factor;
+            this.currentDelay = this.currentDelay * this.options.factor;
 
             const resultError = error instanceof Error ? error : new Error(JSON.stringify(error));
 
-            if (this.currentDelay > this.maxDelay.totalMilliseconds) {
-                this.currentDelay = this.maxDelay.totalMilliseconds;
+            if (this.currentDelay >= this.options.maxDelay.totalMilliseconds) {
+                this.currentDelay = this.options.maxDelay.totalMilliseconds;
                 this.onFail?.(resultError);
             } else {
                 this.onError?.(resultError);
             }
-
+        } finally {
             this.scheduleNextPoll();
         }
     }
