@@ -21,14 +21,6 @@ type pollerOptions = {
     logger?: ServiceLogger,
 }
 
-const defaultOptions: pollerOptions = {
-    initialDelay: TimeSpan.fromSeconds(1),
-    maxDelay: TimeSpan.fromMinutes(1),
-    factor: 1.5,
-    resetPeriod: TimeSpan.fromMinutes(5),
-    linearStep: TimeSpan.fromSeconds(1)
-}
-
 /**
  * Handles polling with adaptive intervals, adjusting delays based on success or failure.
  */
@@ -45,6 +37,14 @@ export class AdaptivePoller {
     private onFail?: ((error: Error) => void);
 
     private readonly options: pollerOptions;
+
+    private readonly defaultOptions: pollerOptions = {
+        initialDelay: TimeSpan.fromSeconds(1),
+        maxDelay: TimeSpan.fromMinutes(1),
+        factor: 1.5,
+        resetPeriod: TimeSpan.fromMinutes(5),
+        linearStep: TimeSpan.fromSeconds(1)
+    }
 
     /**
      * Returns whether the polling operation is currently active.
@@ -64,8 +64,8 @@ export class AdaptivePoller {
      * @param {TimeSpan} options.linearStep - The step used to decrease the delay linearly on success.
      * @param {ServiceLogger} [options.logger] - Optional logger to log events during polling.
      */
-    constructor(options: pollerOptions = defaultOptions) {
-        this.options = options;
+    constructor(options?: Partial<pollerOptions>) {
+        this.options = { ...this.defaultOptions, ...options };
 
         this.currentDelay = this.options.initialDelay.totalMilliseconds;
     }
