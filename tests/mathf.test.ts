@@ -1,5 +1,6 @@
 ﻿import { Mathf } from '../src';
 
+
 describe('Mathf.clamp', () => {
     it('returns min when value is below range', () => {
         expect(Mathf.clamp(-5, 0, 10)).toBe(0);

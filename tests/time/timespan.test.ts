@@ -1,5 +1,6 @@
 ﻿import { TimeSpan } from '../../src';
 
+
 describe('TimeSpan', () => {
     test('constructor defaults to zero', () => {
         const ts = new TimeSpan();

@@ -1,2 +1,2 @@
-﻿export * from './file';
-export * from './config-reader';
+﻿export * from './config-reader';
+export * from './file';

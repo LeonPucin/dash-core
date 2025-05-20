@@ -1,1 +1,2 @@
-﻿export * from './timespan';
+﻿export * from './rate';
+export * from './timespan';

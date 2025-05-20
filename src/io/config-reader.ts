@@ -2,6 +2,7 @@
 import { ServiceLogger } from 'dash-core';
 import path from 'path';
 
+
 /** Reads config files and merges with defaults.*/
 export class ConfigReader {
     private readonly logger;

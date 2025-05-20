@@ -1,5 +1,6 @@
 ﻿import { TimeSpan } from 'dash-core';
 
+
 class Tasks {
     /** Waits for the given `TimeSpan` before resolving. */
     static wait(timeSpan: TimeSpan): Promise<void> {
