@@ -4,6 +4,7 @@
     roots: ['<rootDir>/tests'],
     testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)'],
     moduleNameMapper: {
-        '^dash-kit$': '<rootDir>/src'
+        '^dash-kit$': '<rootDir>/src',
+        "^@/(.*)$": "<rootDir>/src/$1"
     },
 };

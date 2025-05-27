@@ -1,4 +1,4 @@
-﻿import { TimeSpan, Rate } from '../../src';
+﻿import { TimeSpan, Rate } from 'dash-core';
 
 
 describe('Rate class', () => {

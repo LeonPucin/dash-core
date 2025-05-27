@@ -1,4 +1,4 @@
-﻿import { TimeSpan } from '../../src';
+﻿import { TimeSpan } from 'dash-core';
 
 
 describe('TimeSpan', () => {

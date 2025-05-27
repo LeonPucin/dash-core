@@ -1,4 +1,4 @@
-﻿import { Mathf } from '../src';
+﻿import { Mathf } from 'dash-core';
 
 
 describe('Mathf.clamp', () => {
