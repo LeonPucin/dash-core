@@ -1,6 +1,6 @@
 {
   "name": "dash-core",
-  "version": "0.4.1",
+  "version": "0.5.1",
   "description": "A foundational toolkit of types, collections, services, and architectural patterns designed to accelerate application development.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
