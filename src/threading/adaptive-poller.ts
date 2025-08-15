@@ -1,4 +1,4 @@
-import { TimeSpan, ServiceLogger } from 'dash-core';
+import { TimeSpan, ServiceLogger, Wait } from 'dash-core';
 
 
 type pollerOptions = {
@@ -25,13 +25,8 @@ type pollerOptions = {
  * Handles polling with adaptive intervals, adjusting delays based on success or failure.
  */
 export class AdaptivePoller {
-    private currentTimeout?: NodeJS.Timeout;
+    private task?: Promise<void>;
 
-    private currentDelay: number;
-
-    private lastErrorTime?: number;
-
-    private polling: boolean = false;
     private operation?: (() => Promise<void>);
     private onError?: ((error: Error) => void);
     private onFail?: ((error: Error) => void);
@@ -51,7 +46,7 @@ export class AdaptivePoller {
      * @returns {boolean} True if polling is ongoing, false otherwise.
      */
     public get isPolling(): boolean {
-        return this.polling;
+        return this.task !== undefined;
     }
 
     /**
@@ -66,8 +61,6 @@ export class AdaptivePoller {
      */
     constructor(options?: Partial<pollerOptions>) {
         this.options = { ...this.defaultOptions, ...options };
-
-        this.currentDelay = this.options.initialDelay.totalMilliseconds;
     }
 
     /**
@@ -77,17 +70,16 @@ export class AdaptivePoller {
      * @param {(error: Error) => void} onFail - Optional callback to handle failure events (when the interval exceeds maxDelay).
      */
     public start(operation: () => Promise<void>, onError?: (error: Error) => void, onFail?: (error: Error) => void) {
-        if (this.polling) return;
-
-        this.polling = true;
+        if (this.isPolling) {
+            this.options.logger?.warning('AdaptivePolling is already running, stopping the previous task before starting a new one');
+            return;
+        }
 
         this.operation = operation;
         this.onError = onError;
         this.onFail = onFail;
 
-        this.currentDelay = this.options.initialDelay.totalMilliseconds;
-
-        this.runPoll();
+        this.task = this.runPoll();
 
         this.options.logger?.info('AdaptivePolling started');
     }
@@ -95,48 +87,62 @@ export class AdaptivePoller {
     /**
      * Stops the polling process.
      */
-    public stop(): void {
-        this.polling = false;
-        clearTimeout(this.currentTimeout);
+    public async stop() {
+        if (!this.isPolling) {
+            return;
+        }
+
+        if (this.task) {
+            const task = this.task;
+            this.task = undefined;
+            await task;
+        }
 
         this.options.logger?.info('AdaptivePolling stopped');
     }
 
     private async runPoll(): Promise<void> {
-        if (!this.polling || !this.operation) return;
-
-        try {
-            await this.operation();
-
-            const now = Date.now();
-
-            // Reset the delay if no error occurred within the reset period
-            if (!this.lastErrorTime || (now - this.lastErrorTime) >= this.options.resetPeriod.totalMilliseconds) {
-                const initialDelay = this.options.initialDelay.totalMilliseconds;
-                const linearDifference = this.currentDelay - this.options.linearStep.totalMilliseconds;
-
-                this.currentDelay = Math.max(initialDelay, linearDifference);
-            }
-        } catch (error) {
-            this.lastErrorTime = Date.now();
-            this.currentDelay = this.currentDelay * this.options.factor;
-
-            const resultError = error instanceof Error ? error : new Error(JSON.stringify(error));
-
-            if (this.currentDelay >= this.options.maxDelay.totalMilliseconds) {
-                // If delay exceeds maxDelay, trigger the onFail callback
-                this.currentDelay = this.options.maxDelay.totalMilliseconds;
-                this.onFail?.(resultError);
-            } else {
-                // If an error occurred but delay is still within max, trigger the onError callback
-                this.onError?.(resultError);
-            }
-        } finally {
-            this.scheduleNextPoll();
+        if (!this.isPolling || !this.operation) {
+            this.options.logger?.warning('AdaptivePolling runPoll called while not polling or operation is not set');
+            this.stop();
+            return;
         }
-    }
 
-    private scheduleNextPoll(): void {
-        this.currentTimeout = setTimeout(() => this.runPoll(), this.currentDelay);
+        let currentDelay = this.options.initialDelay.totalMilliseconds;
+        let lastErrorTime = 0;
+
+        while (this.isPolling) {
+            try {
+                await this.operation();
+
+                if (!this.isPolling) return;
+
+                const now = Date.now();
+
+                // Reset the delay if no error occurred within the reset period
+                if (!lastErrorTime || (now - lastErrorTime) >= this.options.resetPeriod.totalMilliseconds) {
+                    const initialDelay = this.options.initialDelay.totalMilliseconds;
+                    const linearDifference = currentDelay - this.options.linearStep.totalMilliseconds;
+
+                    currentDelay = Math.max(initialDelay, linearDifference);
+                }
+            } catch (error) {
+                lastErrorTime = Date.now();
+                currentDelay = currentDelay * this.options.factor;
+
+                const resultError = error instanceof Error ? error : new Error(JSON.stringify(error));
+
+                if (currentDelay >= this.options.maxDelay.totalMilliseconds) {
+                    // If delay exceeds maxDelay, trigger the onFail callback
+                    currentDelay = this.options.maxDelay.totalMilliseconds;
+                    this.onFail?.(resultError);
+                } else {
+                    // If an error occurred but delay is still within max, trigger the onError callback
+                    this.onError?.(resultError);
+                }
+            } finally {
+                await Wait(TimeSpan.fromMilliseconds(currentDelay));
+            }
+        }
     }
 }
