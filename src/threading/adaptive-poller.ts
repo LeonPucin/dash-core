@@ -26,6 +26,7 @@ type pollerOptions = {
  */
 export class AdaptivePoller {
     private task?: Promise<void>;
+    private polling: boolean = false;
 
     private operation?: (() => Promise<void>);
     private onError?: ((error: Error) => void);
@@ -46,7 +47,7 @@ export class AdaptivePoller {
      * @returns {boolean} True if polling is ongoing, false otherwise.
      */
     public get isPolling(): boolean {
-        return this.task !== undefined;
+        return this.polling;
     }
 
     /**
@@ -75,6 +76,8 @@ export class AdaptivePoller {
             return;
         }
 
+        this.polling = true;
+
         this.operation = operation;
         this.onError = onError;
         this.onFail = onFail;
@@ -91,6 +94,8 @@ export class AdaptivePoller {
         if (!this.isPolling) {
             return;
         }
+
+        this.polling = false;
 
         if (this.task) {
             const task = this.task;
